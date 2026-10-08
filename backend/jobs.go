@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 
@@ -333,7 +334,7 @@ func handleAnalysisVersions(w http.ResponseWriter, r *http.Request) {
 			operations = append(operations, *e.Input.Operation)
 		}
 	}
-	writeJSON(w, 200, map[string]any{"items": versions, "latest_analysis_id": latest, "jobs": jobs, "operations": operations, "enabled": durableEnabled()})
+	writeJSON(w, 200, map[string]any{"items": versions, "latest_analysis_id": latest, "jobs": jobs, "operations": operations, "composition_hash": incidentComposition(inc), "history_sources": inc.HistorySources, "enabled": durableEnabled()})
 }
 func handleEvidence(w http.ResponseWriter, r *http.Request) {
 	if !changeReadAuth(w, r) {
@@ -412,7 +413,7 @@ func handleDurableIngest(w http.ResponseWriter, r *http.Request) {
 	if cluster == "" || cluster == "unknown" {
 		cluster = alerts[0].Labels["cluster"]
 	}
-	lockKey := "igpt:ingest:lock:" + digest(cluster, gk, alerts[0].Labels["namespace"])
+	lockKey := "igpt:composition:lock"
 	owner := newStableID("ingest-owner")
 	claimed, err := store.disk.rdb.SetNX(ctx, lockKey, owner, 30*time.Second).Result()
 	if err != nil || !claimed {
@@ -431,17 +432,81 @@ func handleDurableIngest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "batch lookup unavailable", 503)
 		return
 	}
-	inc := ingestGroup(alerts, gk)
-	if inc == nil || inc.Status == "resolved" {
+	// Keep a human-moved fingerprint apart from its former automatic batch.
+	partitions := map[string][]EnrichedAlert{}
+	for _, alert := range alerts {
+		fp := alert.Fingerprint
+		if cluster != "" && cluster != "unknown" {
+			fp = "cluster-" + digest(cluster, fp)
+		}
+		target, lookupErr := store.disk.rdb.Get(ctx, "igpt:regroup:binding:"+fp).Result()
+		if lookupErr != nil && lookupErr != redis.Nil {
+			http.Error(w, "manual binding unavailable", 503)
+			return
+		}
+		partitions[target] = append(partitions[target], alert)
+	}
+	targets := make([]string, 0, len(partitions))
+	for target := range partitions {
+		targets = append(targets, target)
+	}
+	sort.Strings(targets)
+	jobIDs := []string{}
+	incidentIDs := []string{}
+	for _, target := range targets {
+		part := partitions[target]
+		fps := []string{}
+		for _, alert := range part {
+			fp := alert.Fingerprint
+			if cluster != "" && cluster != "unknown" {
+				fp = "cluster-" + digest(cluster, fp)
+			}
+			fps = append(fps, fp)
+		}
+		if existing := store.FindIncidentForGroup(fps); existing != nil {
+			count := len(existing.Alerts)
+			known := map[string]bool{}
+			for _, a := range existing.Alerts {
+				known[a.Fingerprint] = true
+			}
+			for i, a := range part {
+				if a.Status != "resolved" && !known[fps[i]] {
+					count++
+					known[fps[i]] = true
+				}
+			}
+			if count > 50 {
+				http.Error(w, "incident composition limit reached; manually separate or close the group", 503)
+				return
+			}
+		}
+		inc := ingestGroup(part, gk)
+		if inc == nil || inc.Status == "resolved" {
+			continue
+		}
+		childBatch := batchID
+		if len(targets) > 1 {
+			childBatch = batchID + "/composition/" + target
+		}
+		jid, err := enqueueAnalysis(ctx, inc, part, childBatch)
+		if err != nil {
+			http.Error(w, "durable persistence or scheduling unavailable; retry same batch", 503)
+			return
+		}
+		jobIDs = append(jobIDs, jid)
+		incidentIDs = append(incidentIDs, inc.ID)
+	}
+	if len(jobIDs) == 0 {
 		writeJSON(w, 200, map[string]any{"status": "resolved", "scheduled": false})
 		return
 	}
-	jid, err := enqueueAnalysis(ctx, inc, alerts, batchID)
-	if err != nil {
-		http.Error(w, "durable persistence or scheduling unavailable; retry same batch", 503)
-		return
+	if len(targets) > 1 {
+		if err := store.disk.rdb.Set(ctx, "igpt:ingest:batch:"+digest(cluster, batchID), jobIDs[0], 0).Err(); err != nil {
+			http.Error(w, "batch acknowledgement unavailable; retry", 503)
+			return
+		}
 	}
-	writeJSON(w, 202, map[string]any{"incident_id": inc.ID, "job_id": jid, "scheduled": true})
+	writeJSON(w, 202, map[string]any{"incident_id": incidentIDs[0], "incident_ids": incidentIDs, "job_id": jobIDs[0], "job_ids": jobIDs, "scheduled": true})
 }
 func trustedBearer(r *http.Request, token string) bool {
 	return token != "" && constantToken(r.Header.Get("Authorization"), "Bearer "+token)
