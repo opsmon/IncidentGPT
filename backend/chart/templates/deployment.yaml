@@ -29,8 +29,24 @@ spec:
               protocol: TCP
           env:
             {{- range $key, $value := .Values.env }}
+            {{- if not (and (eq $key "TIMELINE_READ_USER") $.Values.readerAuth.existingSecret (not $.Values.changes.existingSecret)) }}
             - name: {{ $key }}
               value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
+            {{- if and .Values.readerAuth.existingSecret (not .Values.changes.existingSecret) }}
+            - name: TIMELINE_READ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.readerAuth.existingSecret }}
+                  key: {{ .Values.readerAuth.usernameKey }}
+                  optional: true
+            - name: TIMELINE_READ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.readerAuth.existingSecret }}
+                  key: {{ .Values.readerAuth.passwordKey }}
+                  optional: true
             {{- end }}
             {{- if .Values.logsStore.existingSecret }}
             # Пароль к хранилищу логов — из секрета: конфиг интеграций живёт в памяти
