@@ -1,3 +1,4 @@
+import { DependencyContext } from '@/components/DependencyContext'
 import { useEffect, useState } from 'react'
 import { GuidedDiagnostics } from '@/components/GuidedDiagnostics'
 import { IncidentMemory } from '@/components/IncidentMemory'
@@ -626,6 +627,7 @@ export function IncidentDetail() {
         </Card>}
       </div>
 
+      <DependencyContext incidentId={incident.id} alerts={incident.alerts || []} />
       <GuidedDiagnostics key={`diagnostics-${incident.id}`} incidentId={incident.id} />
       <IncidentMemory key={`memory-${incident.id}`} incidentId={incident.id} />
       <AnalysisHistory key={`analysis-${incident.id}`} incidentId={incident.id} />
