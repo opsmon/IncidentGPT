@@ -1807,6 +1807,9 @@ func main() {
 	mux.HandleFunc("GET /api/v1/jobs/metrics", handleJobMetrics)
 	mux.HandleFunc("GET /api/v1/incidents/{id}/resolution", handleResolution)
 	mux.HandleFunc("PUT /api/v1/incidents/{id}/resolution", handleResolution)
+	mux.HandleFunc("POST /api/v1/incidents/{id}/investigations", handleInvestigations)
+	mux.HandleFunc("GET /api/v1/incidents/{id}/investigations", handleInvestigations)
+	mux.HandleFunc("POST /api/v1/incidents/{id}/investigations/{job}/cancel", handleDiagnosticCancel)
 
 	mux.HandleFunc("POST /api/v1/changes", handleChangeIngest)
 	mux.HandleFunc("POST /api/v1/changes/coverage", handleChangeCoverage)
