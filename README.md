@@ -335,3 +335,7 @@ Enricher умеет прикладывать к алерту выжимку ло
 ## Лицензия
 
 MIT (см. `LICENSE`).
+
+## Recent deployment changes (optional)
+
+Incidents can display bounded, cluster-aware deployment metadata from a Kubernetes collector and an authenticated normalized Argo CD/CI webhook. The feature is disabled by default. It shows temporal correlation, coverage gaps and unknown historical data; it does not prove causation. See [configuration, API, retention and rollback](docs/roadmap/change-timeline.md), the [Argo CD fixture](docs/fixtures/argocd-change.json), and the [notification example](docs/fixtures/argocd-notifications.yaml).

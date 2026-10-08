@@ -30,6 +30,23 @@ spec:
             - containerPort: 9099
               name: http
           env:
+            - name: CHANGE_COLLECTOR_ENABLED
+              value: {{ .Values.changes.enabled | quote }}
+            - name: CLUSTER_ID
+              value: {{ .Values.changes.clusterId | default .Values.env.clusterName | quote }}
+            - name: CHANGE_COLLECTOR_NAMESPACES
+              value: {{ .Values.changes.namespaces | quote }}
+            - name: CHANGE_BACKEND_URL
+              value: {{ .Values.changes.backendUrl | quote }}
+            - name: CHANGE_POLL_SECONDS
+              value: {{ .Values.changes.pollSeconds | quote }}
+            {{- if .Values.changes.existingSecret }}
+            - name: CHANGE_INGEST_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.changes.existingSecret }}
+                  key: {{ .Values.changes.ingestTokenKey }}
+            {{- end }}
             - name: PROMETHEUS_URL
               value: {{ .Values.env.prometheusUrl | quote }}
             - name: PYTHON_BACKEND_URL

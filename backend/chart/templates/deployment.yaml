@@ -41,6 +41,23 @@ spec:
                   name: {{ .Values.logsStore.existingSecret }}
                   key: {{ .Values.logsStore.passwordKey }}
             {{- end }}
+            {{- if .Values.changes.existingSecret }}
+            - name: CHANGE_INGEST_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.changes.existingSecret }}
+                  key: {{ .Values.changes.ingestTokenKey }}
+            - name: TIMELINE_READ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.changes.existingSecret }}
+                  key: {{ .Values.changes.readerPasswordKey }}
+            - name: SANITIZER_AUTH_SHARED_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.changes.existingSecret }}
+                  key: {{ .Values.changes.sanitizerSecretKey }}
+            {{- end }}
           readinessProbe:
             httpGet:
               path: /healthz

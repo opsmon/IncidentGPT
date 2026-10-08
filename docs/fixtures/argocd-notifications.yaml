@@ -1,0 +1,39 @@
+# Merge with the existing argocd-notifications-cm. Register the secret key in
+# argocd-notifications-secret and restrict the template to one application/workload.
+# This adapter accepts normalized metadata; it is not a universal CI integration.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+data:
+  service.webhook.incidentgpt: |
+    url: http://incidentgpt-backend.incidentgpt.svc:8080/api/v1/changes
+    headers:
+      - name: Authorization
+        value: Bearer $incidentgpt-change-token
+      - name: Content-Type
+        value: application/json
+  template.incidentgpt-payments-sync: |
+    webhook:
+      incidentgpt:
+        method: POST
+        body: |
+          {
+            "schema_version": 1,
+            "event_id": "{{.app.metadata.name}}:{{.app.status.operationState.syncResult.revision}}:{{.app.status.operationState.finishedAt}}",
+            "cluster_id": "prod-eu",
+            "namespace": "payments",
+            "workload": "payments-api",
+            "source": "argocd",
+            "event_type": "deployment",
+            "source_timestamp": "{{.app.status.operationState.finishedAt}}",
+            "revision": "{{.app.status.operationState.syncResult.revision}}"
+          }
+  trigger.incidentgpt-payments-synced: |
+    - when: app.metadata.name == 'payments-api' and app.status.operationState.phase in ['Succeeded']
+      send: [incidentgpt-payments-sync]
+      oncePer: app.status.operationState.finishedAt
+# Application annotation:
+# notifications.argoproj.io/subscribe.incidentgpt-payments-synced.incidentgpt: ""
+# Add a namespace-scoped NetworkPolicy ingress rule for your Argo CD controller.

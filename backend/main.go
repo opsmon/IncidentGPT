@@ -61,23 +61,25 @@ type Alert struct {
 }
 
 type Incident struct {
-	ID              string            `json:"id"`
-	Title           string            `json:"title"`
-	Severity        string            `json:"severity"`
-	Status          string            `json:"status"`
-	Namespace       string            `json:"namespace"`
-	Source          string            `json:"source"`
-	CreatedAt       time.Time         `json:"created_at"`
-	UpdatedAt       time.Time         `json:"updated_at"`
-	AnalysisSummary *string           `json:"analysis_summary"`
-	AlertCount      int               `json:"alert_count"`
-	DiscardedCount  int               `json:"discarded_count"`
-	ChainLength     int               `json:"chain_length"`
-	LogErrors       int               `json:"log_errors"`
-	Confidence      *int              `json:"confidence"`
-	DurationSec     *int              `json:"duration_sec"`
-	HasPostmortem   bool              `json:"has_postmortem"`
-	Labels          map[string]string `json:"labels,omitempty"`
+	ID                string            `json:"id"`
+	ClusterID         string            `json:"cluster_id,omitempty"`
+	AnalysisRequestID string            `json:"analysis_request_id,omitempty"`
+	Title             string            `json:"title"`
+	Severity          string            `json:"severity"`
+	Status            string            `json:"status"`
+	Namespace         string            `json:"namespace"`
+	Source            string            `json:"source"`
+	CreatedAt         time.Time         `json:"created_at"`
+	UpdatedAt         time.Time         `json:"updated_at"`
+	AnalysisSummary   *string           `json:"analysis_summary"`
+	AlertCount        int               `json:"alert_count"`
+	DiscardedCount    int               `json:"discarded_count"`
+	ChainLength       int               `json:"chain_length"`
+	LogErrors         int               `json:"log_errors"`
+	Confidence        *int              `json:"confidence"`
+	DurationSec       *int              `json:"duration_sec"`
+	HasPostmortem     bool              `json:"has_postmortem"`
+	Labels            map[string]string `json:"labels,omitempty"`
 
 	// Detail fields
 	Alerts       []*Alert         `json:"alerts,omitempty"`
@@ -480,6 +482,17 @@ func ingestGroup(enriched []EnrichedAlert, groupKey string) *Incident {
 		return nil
 	}
 
+	// Cluster-aware fingerprints preserve legacy keys only when cluster is unknown.
+	enriched = append([]EnrichedAlert(nil), enriched...)
+	for i := range enriched {
+		c := enriched[i].ClusterName
+		if c == "" {
+			c = enriched[i].Labels["cluster"]
+		}
+		if c != "" && c != "unknown" {
+			enriched[i].Fingerprint = "cluster-" + digest(c, enriched[i].Fingerprint)
+		}
+	}
 	firing := make([]EnrichedAlert, 0, len(enriched))
 	fingerprints := make([]string, 0, len(enriched))
 	for _, ea := range enriched {
@@ -581,19 +594,21 @@ func ingestGroup(enriched []EnrichedAlert, groupKey string) *Incident {
 	title := buildGroupTitle(newAlerts, ns, pod)
 
 	inc := &Incident{
-		ID:          id,
-		Title:       title,
-		Severity:    severity,
-		Status:      "active",
-		Namespace:   ns,
-		Source:      lead.Source,
-		CreatedAt:   now,
-		UpdatedAt:   now,
-		AlertCount:  len(newAlerts),
-		ChainLength: len(chain),
-		Labels:      lead.Labels,
-		Alerts:      newAlerts,
-		Chain:       chain,
+		ID:                id,
+		ClusterID:         lead.ClusterName,
+		AnalysisRequestID: newStableID("analysis"),
+		Title:             title,
+		Severity:          severity,
+		Status:            "active",
+		Namespace:         ns,
+		Source:            lead.Source,
+		CreatedAt:         now,
+		UpdatedAt:         now,
+		AlertCount:        len(newAlerts),
+		ChainLength:       len(chain),
+		Labels:            lead.Labels,
+		Alerts:            newAlerts,
+		Chain:             chain,
 		Context: &IncidentContext{
 			Namespace:    ns,
 			Pod:          pod,
@@ -601,7 +616,7 @@ func ingestGroup(enriched []EnrichedAlert, groupKey string) *Incident {
 			Node:         strVal(lead.K8sContext, "node"),
 			NodeRAM:      strVal(lead.K8sContext, "node_ram"),
 			NodeCPU:      strVal(lead.K8sContext, "node_cpu"),
-			LastDeployAt: now.Format(time.RFC3339),
+			LastDeployAt: "",
 			Labels:       lead.Labels,
 		},
 		RawAlert: map[string]any{"source": lead.Source, "labels": lead.Labels, "annotations": lead.Annotations},
@@ -614,6 +629,9 @@ func ingestGroup(enriched []EnrichedAlert, groupKey string) *Incident {
 		},
 		GroupKey:     groupKey,
 		Fingerprints: make(map[string]bool, len(newAlerts)),
+	}
+	if inc.ClusterID == "" || inc.ClusterID == "unknown" {
+		inc.ClusterID = lead.Labels["cluster"]
 	}
 	if len(chain) > 0 {
 		inc.RootCauseID = &chain[0].ID
@@ -832,7 +850,18 @@ func handleIngest(w http.ResponseWriter, r *http.Request) {
 	for range alerts {
 		store.TrackAlert()
 	}
-	ingestGroup(alerts, groupKey)
+	inc := ingestGroup(alerts, groupKey)
+	if inc != nil {
+		// Add stable routing identities without changing legacy alert fields.
+		var envelope map[string]any
+		if json.Unmarshal(body, &envelope) != nil || envelope == nil {
+			envelope = map[string]any{"alerts": alerts, "group_key": groupKey}
+		}
+		envelope["incident_id"] = inc.ID
+		envelope["analysis_id"] = inc.AnalysisRequestID
+		envelope["cluster_id"] = incidentCluster(inc)
+		body, _ = json.Marshal(envelope)
+	}
 
 	// Forward to ai-worker asynchronously
 	if forwardToAI == "true" && aiWorkerURL != "" {
@@ -939,6 +968,10 @@ func handleListIncidents(w http.ResponseWriter, r *http.Request) {
 
 // GET /api/v1/incidents/{id}
 func handleGetIncident(w http.ResponseWriter, r *http.Request) {
+	if strings.HasSuffix(r.URL.Path, "/changes") {
+		handleIncidentChanges(w, r)
+		return
+	}
 	// Логи лежат во внешнем хранилище и тянутся отдельным запросом: они тяжелее
 	// самого инцидента, и грузить их вместе с ним ни к чему.
 	if strings.HasSuffix(r.URL.Path, "/logs") {
@@ -1760,6 +1793,8 @@ func intQuery(r *http.Request, key string, def int) int {
 func main() {
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("POST /api/v1/changes", handleChangeIngest)
+	mux.HandleFunc("POST /api/v1/changes/coverage", handleChangeCoverage)
 	// Ingest (from enricher)
 	mux.HandleFunc("POST /api/v1/ingest", handleIngest)
 	mux.HandleFunc("POST /api/enriched", handleEnrichedCompat)

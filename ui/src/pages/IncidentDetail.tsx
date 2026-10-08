@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { RecentChanges } from '@/components/RecentChanges'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   ArrowLeft, Bot, Copy, Check, ThumbsUp, ThumbsDown, ChevronDown, ChevronRight,
@@ -621,6 +622,8 @@ export function IncidentDetail() {
           )}
         </Card>
       </div>
+
+      <RecentChanges key={incident.id} incidentId={incident.id} />
 
       <Modal
         open={assignOpen}

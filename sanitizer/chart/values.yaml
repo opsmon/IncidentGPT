@@ -58,6 +58,7 @@ affinity: {}
 
 networkPolicy:
   enabled: true
+  backendAppLabel: incidentgpt-backend
 
 podDisruptionBudget:
   enabled: true

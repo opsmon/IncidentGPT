@@ -28,6 +28,16 @@ jobs:
             image: golang:1.24-bookworm   # == sanitizer/Dockerfile
           - service: backend
             image: golang:1.24-bookworm   # == backend/Dockerfile
+    services:
+      redis:
+        image: redis:7.2.7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      INCIDENTGPT_TEST_REDIS_ADDR: redis:6379
     defaults:
       run:
         working-directory: ${{ matrix.service }}
