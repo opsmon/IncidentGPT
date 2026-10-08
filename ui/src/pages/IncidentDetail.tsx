@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { AnalysisHistory } from '@/components/AnalysisHistory'
 import { RecentChanges } from '@/components/RecentChanges'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
@@ -513,7 +514,7 @@ export function IncidentDetail() {
           )}
         </Card>
 
-        <Card
+        {incident.analysis_mode !== "structured" && <Card
           title="Анализ AI"
           action={
             <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-text-muted">
@@ -549,7 +550,7 @@ export function IncidentDetail() {
                       style={{ width: `${analysis.confidence}%` }}
                     />
                   </span>
-                  <span className="tnum text-xs font-semibold">уверенность {analysis.confidence}%</span>
+                  <span className="tnum text-xs font-semibold">самооценка модели (не калибрована): {analysis.confidence}%</span>
                 </div>
               )}
 
@@ -620,9 +621,10 @@ export function IncidentDetail() {
               <Feedback incidentId={incident.id} existing={incident.feedback} />
             </>
           )}
-        </Card>
+        </Card>}
       </div>
 
+      <AnalysisHistory key={`analysis-${incident.id}`} incidentId={incident.id} />
       <RecentChanges key={incident.id} incidentId={incident.id} />
 
       <Modal

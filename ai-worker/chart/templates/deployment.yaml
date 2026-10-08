@@ -35,6 +35,12 @@ spec:
             - containerPort: 8080
               name: http
           env:
+            - name: ANALYSIS_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-secrets" (include "ai-worker.fullname" .)) .Values.secrets.existingSecret }}
+                  key: {{ .Values.secrets.analysisServiceTokenKey }}
+                  optional: true
             - name: OPENROUTER_API_KEY
               valueFrom:
                 secretKeyRef:

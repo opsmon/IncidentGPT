@@ -17,6 +17,8 @@ service:
 
 env:
   LISTEN_ADDR: ":8080"
+  DURABLE_ANALYSIS_ENABLED: "false"
+  STRUCTURED_WORKER_URL: "http://ai-worker.incidentgpt.svc:8080/v1/analyze"
   CHANGES_ENABLED: "false"
   CHANGE_RETENTION_DAYS: "30"
   CHANGE_LOOKBACK: "2h"
@@ -55,3 +57,4 @@ changes:
   ingestTokenKey: change-ingest-token
   readerPasswordKey: timeline-read-password
   sanitizerSecretKey: auth-shared-secret
+  analysisServiceTokenKey: analysis-service-token

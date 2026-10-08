@@ -180,3 +180,5 @@ changes:
   pollSeconds: 60
   existingSecret: ""
   ingestTokenKey: change-ingest-token
+  durableCorrelation: false
+  analysisServiceTokenKey: analysis-service-token

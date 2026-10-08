@@ -64,6 +64,7 @@ type Incident struct {
 	ID                string            `json:"id"`
 	ClusterID         string            `json:"cluster_id,omitempty"`
 	AnalysisRequestID string            `json:"analysis_request_id,omitempty"`
+	AnalysisMode      string            `json:"analysis_mode,omitempty"`
 	Title             string            `json:"title"`
 	Severity          string            `json:"severity"`
 	Status            string            `json:"status"`
@@ -399,7 +400,7 @@ func (s *Store) FindIncidentForGroup(fingerprints []string) *Incident {
 	if s.persistent() {
 		for _, fp := range fingerprints {
 			inc, err := s.disk.FindIncidentByFingerprint(fp)
-			if err == nil && inc != nil && inc.Status == "active" {
+			if err == nil && inc != nil && inc.Status != "resolved" {
 				return inc
 			}
 		}
@@ -408,7 +409,7 @@ func (s *Store) FindIncidentForGroup(fingerprints []string) *Incident {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	for _, inc := range s.incidents {
-		if inc.Status != "active" {
+		if inc.Status == "resolved" {
 			continue
 		}
 		for _, fp := range fingerprints {
@@ -828,6 +829,10 @@ func parseIngestPayload(body []byte) ([]EnrichedAlert, string, error) {
 
 // POST /api/v1/ingest — from enricher
 func handleIngest(w http.ResponseWriter, r *http.Request) {
+	if durableEnabled() {
+		handleDurableIngest(w, r)
+		return
+	}
 	body, err := io.ReadAll(r.Body)
 	r.Body.Close()
 	if err != nil {
@@ -990,6 +995,11 @@ func handleGetIncident(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "not found", 404)
 		return
 	}
+	if durableEnabled() {
+		copy := *inc
+		copy.AnalysisMode = "structured"
+		inc = &copy
+	}
 	writeJSON(w, 200, inc)
 }
 
@@ -1085,6 +1095,9 @@ func requestUser(r *http.Request) string {
 // Инцидент ищем по id из пути, а если ai-worker знает только ключ группы —
 // по нему (`?group_key=...`).
 func handleAnalysisCallback(w http.ResponseWriter, r *http.Request) {
+	if rejectDurableCallback(w, r) {
+		return
+	}
 	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/api/v1/incidents/"), "/")
 	id := parts[0]
 
@@ -1791,7 +1804,11 @@ func intQuery(r *http.Request, key string, def int) int {
 // ── Router ──────────────────────────────────────────────────────────────────
 
 func main() {
+	startAnalysisJobs()
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /api/v1/incidents/{id}/analyses", handleAnalysisVersions)
+	mux.HandleFunc("GET /api/v1/incidents/{id}/evidence/{evidence}", handleEvidence)
+	mux.HandleFunc("GET /api/v1/jobs/metrics", handleJobMetrics)
 
 	mux.HandleFunc("POST /api/v1/changes", handleChangeIngest)
 	mux.HandleFunc("POST /api/v1/changes/coverage", handleChangeCoverage)

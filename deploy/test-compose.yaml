@@ -1,0 +1,34 @@
+# Disposable offline-provider regression environment; no production services.
+services:
+  redis:
+    image: redis:7.2.7
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+  backend-tests:
+    image: golang:1.24-bookworm
+    working_dir: /src/backend
+    volumes: ["../:/src:ro"]
+    environment:
+      INCIDENTGPT_TEST_REDIS_ADDR: redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: [go, test, -race, ./...]
+  enricher-tests:
+    image: golang:1.24-bookworm
+    working_dir: /src/enricher
+    volumes: ["../:/src:ro"]
+    environment:
+      INCIDENTGPT_TEST_REDIS_ADDR: redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: [go, test, -race, ./...]
+  worker-tests:
+    image: golang:1.25-bookworm
+    working_dir: /src/ai-worker
+    volumes: ["../:/src:ro"]
+    command: [go, test, -race, ./...]
