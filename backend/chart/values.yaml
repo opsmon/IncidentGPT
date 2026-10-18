@@ -17,6 +17,11 @@ service:
 
 env:
   LISTEN_ADDR: ":8080"
+  CHANGES_ENABLED: "false"
+  CHANGE_RETENTION_DAYS: "30"
+  CHANGE_LOOKBACK: "2h"
+  SANITIZER_URL: "http://incidentgpt-sanitizer.incidentgpt.svc:8080"
+  TIMELINE_READ_USER: "admin"
   # Бэкенд стоит в разрыве группового пути: enricher шлёт группу сюда, мы строим
   # инцидент для UI и передаём тело дальше в ai-worker — тот же эндпоинт, что
   # enricher звал напрямую, поэтому разбор в Telegram работает как прежде.
@@ -43,3 +48,10 @@ networkPolicy:
 logsStore:
   existingSecret: ""
   passwordKey: password
+
+# Same reader password as the UI Basic-auth account; separate service token.
+changes:
+  existingSecret: ""
+  ingestTokenKey: change-ingest-token
+  readerPasswordKey: timeline-read-password
+  sanitizerSecretKey: auth-shared-secret

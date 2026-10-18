@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "event_id": "payments-api:sync:4af619e:2026-10-07T12:00:00Z",
+  "cluster_id": "prod-eu",
+  "namespace": "payments",
+  "workload": "payments-api",
+  "service": "payments",
+  "source": "argocd",
+  "event_type": "deployment",
+  "source_timestamp": "2026-10-07T12:00:00Z",
+  "revision": "4af619e",
+  "images": ["registry.example.com/payments/api:4af619e"],
+  "source_url": "https://github.com/example/payments/commit/4af619e"
+}

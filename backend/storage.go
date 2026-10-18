@@ -84,6 +84,11 @@ func (s *Storage) GetIncident(id string) (*Incident, error) {
 	if err := json.Unmarshal(data, &inc); err != nil {
 		return nil, err
 	}
+	// Legacy records did not observe a deployment; their creation time was
+	// previously written into last_deploy_at. Do not present that as evidence.
+	if inc.AnalysisRequestID == "" && inc.Context != nil {
+		inc.Context.LastDeployAt = ""
+	}
 	// Отпечатки не сериализуются (json:"-"), восстанавливаем из алертов.
 	inc.Fingerprints = make(map[string]bool, len(inc.Alerts))
 	for _, a := range inc.Alerts {

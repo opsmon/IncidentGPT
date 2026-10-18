@@ -27,6 +27,12 @@ spec:
           namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: {{ .Release.Namespace }}
+        - podSelector:
+            matchLabels:
+              app: {{ .Values.networkPolicy.backendAppLabel }}
+          namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Release.Namespace }}
       ports:
         - port: 8080
           protocol: TCP

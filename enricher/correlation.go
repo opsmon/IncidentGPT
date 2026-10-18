@@ -53,10 +53,14 @@ func initRedis() error {
 
 // groupKeyFor возвращает namespace для группировки ("_nolabel" если пусто).
 func groupKeyFor(e EnrichedAlert) string {
-	if ns := e.Labels["namespace"]; ns != "" {
-		return ns
+	ns := e.Labels["namespace"]
+	if ns == "" {
+		ns = "_nolabel"
 	}
-	return "_nolabel"
+	if e.ClusterName != "" && e.ClusterName != "unknown" {
+		return e.ClusterName + "/" + ns
+	}
+	return ns
 }
 
 // bufferAlert кладёт обогащённый алерт в Redis-список grp:{namespace} с TTL CORR_WINDOW.

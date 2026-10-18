@@ -458,7 +458,7 @@ func main() {
 	}
 
 	// Kubernetes client (optional — graceful degradation if not in cluster)
-	if appCfg.EnableK8sContext {
+	if appCfg.EnableK8sContext || os.Getenv("CHANGE_COLLECTOR_ENABLED") == "true" {
 		if err := initK8sClient(); err != nil {
 			log.Printf("WARN: k8s client init failed: %v (k8s enrichment disabled)", err)
 		} else {
@@ -466,6 +466,7 @@ func main() {
 		}
 	}
 
+	startChangeCollector()
 	log.Printf("Starting Data Enricher on %s", appCfg.ListenAddr)
 	log.Printf("Prometheus: %s", appCfg.PromURL)
 	log.Printf("Backend: %s", appCfg.BackendURL)
@@ -600,7 +601,7 @@ func enrichAlert(ctx context.Context, a AMAlert) EnrichedAlert {
 	e.Owner = ownerFromLabels(a.Labels)
 
 	e.EnricherVer = appCfg.EnricherVersion
-	e.ClusterName = appCfg.ClusterName
+	e.ClusterName = envOr("CLUSTER_ID", appCfg.ClusterName)
 	e.Environment = appCfg.Environment
 	e.Enriched = true
 	e.EnrichedAt = time.Now().UTC().Format(time.RFC3339)

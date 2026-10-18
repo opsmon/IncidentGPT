@@ -127,6 +127,19 @@ func collectPodContext(ctx context.Context, a AMAlert) (map[string]string, []str
 
 	data := make(map[string]string)
 	data["pod_phase"] = string(pod.Status.Phase)
+	// Resolve real ownership; do not infer workload names by trimming pod names.
+	for _, owner := range pod.OwnerReferences {
+		if owner.Kind == "ReplicaSet" && owner.Controller != nil && *owner.Controller {
+			rs, err := k8sClient.AppsV1().ReplicaSets(ns).Get(ctx, owner.Name, metav1.GetOptions{})
+			if err == nil {
+				for _, parent := range rs.OwnerReferences {
+					if parent.Kind == "Deployment" && parent.Controller != nil && *parent.Controller {
+						data["deployment"] = parent.Name
+					}
+				}
+			}
+		}
+	}
 	data["pod_age"] = time.Since(pod.CreationTimestamp.Time).Truncate(time.Minute).String()
 
 	for _, c := range pod.Status.Conditions {
