@@ -25,10 +25,11 @@ with [the new preview values](examples/values-preview.yaml). Those are template
 checks; placeholders must be replaced and secrets supplied before deployment.
 
 A headless Microsoft Edge session with Playwright, local Vite and intercepted API
-fixtures passed 14 checks on 2026-10-19:
+fixtures passed 15 checks on 2026-10-19:
 
 - Overview data rendering and desktop layout.
 - 25-row pagination, the second page and browser Back.
+- Route navigation returns to the content start, while guide fragments retain their target.
 - Severity/status filters and reset, including transmitted API query parameters.
 - Debounced search, slash shortcut, empty results and recovery.
 - Failed list load and retry recovery.

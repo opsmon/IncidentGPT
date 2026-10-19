@@ -16,7 +16,7 @@ const names: Record<string, string> = {
 
 export function Layout() {
   const { data: stats, isError } = useDashboardStats()
-  const { data: predictions } = usePredictions()
+  const { data: predictions, isError: predictionsError } = usePredictions()
   const { pathname, hash } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const dialog = useRef<HTMLDialogElement>(null)
@@ -27,6 +27,7 @@ export function Layout() {
       const frame = requestAnimationFrame(() => document.getElementById(hash.slice(1))?.scrollIntoView())
       return () => cancelAnimationFrame(frame)
     }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [pathname, hash])
   useEffect(() => {
     document.title = `${section} · IncidentGPT`
@@ -48,7 +49,10 @@ export function Layout() {
       <a href="#main-content" className="skip-link">
         Перейти к содержимому
       </a>
-      <Sidebar activeIncidents={stats?.active_incidents} warnings={predictions?.length} />
+      <Sidebar
+        activeIncidents={isError ? undefined : stats?.active_incidents}
+        warnings={predictionsError ? undefined : predictions?.length}
+      />
       <dialog
         ref={dialog}
         id="mobile-navigation"
@@ -71,8 +75,8 @@ export function Layout() {
           <Sidebar
             mobile
             onNavigate={() => setMenuOpen(false)}
-            activeIncidents={stats?.active_incidents}
-            warnings={predictions?.length}
+            activeIncidents={isError ? undefined : stats?.active_incidents}
+            warnings={predictionsError ? undefined : predictions?.length}
           />
         </div>
       </dialog>
