@@ -1,7 +1,8 @@
 # Operator interface and guide review
 
-The interface uses neutral light surfaces, ink typography, restrained blue links
-and separate severity colors. Navigation is compact; metrics share one strip,
+The interface offers neutral light and graphite dark palettes with restrained
+blue links and separate severity colors. A header toggle persists the choice;
+the initial default follows the system theme. Navigation is compact; metrics share one strip,
 and incident queues use aligned rows rather than repeated floating cards.
 The overview focuses on data; instructional content lives in the guide. The main changes are the responsive navigation,
 shift overview, paginated/filterable incident queue, incident workspace tabs and an
@@ -18,6 +19,8 @@ layout and UI behavior, not a connected cluster or a production deployment.
 | Incident queue | [Queue](images/ui/desktop-incidents.png) | [Queue](images/ui/mobile-incidents.png) |
 | Incident workspace | — | [Workspace](images/ui/mobile-incident.png) |
 | On-call guide | — | [Guide](images/ui/mobile-guide.png) |
+| Dark shift overview | [Overview](images/ui/desktop-overview-dark.png) | [Overview](images/ui/mobile-overview-dark.png) |
+| Dark incident queue | [Queue](images/ui/desktop-incidents-dark.png) | — |
 
 ## Candidate validation
 
@@ -27,7 +30,7 @@ with [the new preview values](examples/values-preview.yaml). Those are template
 checks; placeholders must be replaced and secrets supplied before deployment.
 
 A headless Microsoft Edge session with Playwright, local Vite and intercepted API
-fixtures passed 15 checks on 2026-10-19:
+fixtures passed 23 checks on 2026-10-19:
 
 - Overview data rendering and desktop layout.
 - 25-row pagination, the second page and browser Back.
@@ -43,6 +46,14 @@ fixtures passed 15 checks on 2026-10-19:
 - Guide deep link, FAQ and mobile layout.
 - Failed dashboard stats display unknown measurements rather than healthy zero counts.
 - Additional incident/list/guide overflow checks at 320px and 768px.
+- System theme changes before manual selection.
+- Explicit toggle, SVG recoloring and persistence across reload/navigation.
+- Recharts recoloring immediately on the current route.
+- Unsaved incident draft retained while switching themes.
+- Dark layouts at all four viewport widths.
+- Preference synchronization across browser tabs.
+- Stored preference applied before the application bundle.
+- Safe operation when browser storage is blocked.
 - No uncaught browser exceptions across the scenario.
 
 Main screenshots were reviewed at 1440px and 390px. The main text, link and

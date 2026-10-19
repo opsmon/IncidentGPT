@@ -12,6 +12,7 @@
   --color-text-muted: #667388;
   --color-accent: #3456c5;
   --color-accent-hover: #2845a8;
+  --color-text-on-accent: #ffffff;
   --color-severity-critical: #b92f35;
   --color-severity-warning: #8c5b13;
   --color-severity-info: #2c5db2;
@@ -20,6 +21,9 @@
   --color-status-resolved: #24734f;
   --color-status-muted: #626d7e;
   --color-status-acknowledged: #8c5b13;
+  --color-selection: #dce4ff;
+  --color-scrollbar: #c7ced9;
+  --shadow-chart-tooltip: 0 4px 16px #20283812;
   --radius-card: 8px;
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
@@ -57,7 +61,7 @@ select {
   cursor: pointer;
 }
 ::selection {
-  background: #dce4ff;
+  background: var(--color-selection);
   color: var(--color-text-primary);
 }
 .skip-link {
@@ -69,7 +73,7 @@ select {
   border-radius: 6px;
   padding: 10px 16px;
   background: var(--color-accent);
-  color: white;
+  color: var(--color-text-on-accent);
 }
 .skip-link:focus {
   transform: translateY(0);
@@ -161,6 +165,33 @@ select {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #c7ced9;
+  background: var(--color-scrollbar);
   border-radius: 4px;
+}
+
+/* Keep the same visual hierarchy and restrained accents in both modes. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-surface-primary: #15181e;
+  --color-surface-secondary: #1c2027;
+  --color-surface-tertiary: #282e38;
+  --color-border-default: #3b4350;
+  --color-border-soft: #303742;
+  --color-text-primary: #e8ebf1;
+  --color-text-secondary: #bec7d5;
+  --color-text-muted: #a1aec1;
+  --color-accent: #a9bdff;
+  --color-accent-hover: #c4d1ff;
+  --color-text-on-accent: #15181e;
+  --color-severity-critical: #f49ba0;
+  --color-severity-warning: #e4bc79;
+  --color-severity-info: #96baff;
+  --color-severity-unknown: #aab5c7;
+  --color-status-active: #f49ba0;
+  --color-status-resolved: #86c6a2;
+  --color-status-muted: #aab5c7;
+  --color-status-acknowledged: #e4bc79;
+  --color-selection: #364768;
+  --color-scrollbar: #525e70;
+  --shadow-chart-tooltip: 0 4px 16px #00000040;
 }

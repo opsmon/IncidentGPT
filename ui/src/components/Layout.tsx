@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { BookOpen, ChevronRight, Menu, X } from 'lucide-react'
+import { ThemeToggle } from './ThemeToggle'
 import { Sidebar } from './Sidebar.tsx'
 import { useDashboardStats } from '@/hooks/useDashboard.ts'
 import { usePredictions } from '@/hooks/usePredictions.ts'
@@ -101,7 +102,8 @@ export function Layout() {
             <ChevronRight size={12} className="hidden sm:block" />
             <span className="truncate text-text-primary">{section}</span>
           </nav>
-          <div className="ml-auto flex items-center gap-4">
+          <div className="ml-auto flex items-center gap-1 sm:gap-3">
+            <ThemeToggle />
             <Link
               to="/help"
               className="flex min-h-10 items-center gap-2 rounded-lg px-2 text-xs text-text-secondary hover:bg-surface-tertiary hover:text-accent"

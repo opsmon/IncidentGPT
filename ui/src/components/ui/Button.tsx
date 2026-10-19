@@ -4,7 +4,7 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
 type Size = 'sm' | 'md' | 'lg'
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-accent hover:bg-accent-hover text-surface-primary',
+  primary: 'bg-accent hover:bg-accent-hover text-text-on-accent',
   secondary: 'bg-surface-secondary hover:bg-surface-tertiary/50 hover:border-text-muted text-text-primary border border-border-default',
   ghost: 'hover:bg-surface-tertiary text-text-secondary hover:text-text-primary',
   danger: 'bg-severity-critical/15 hover:bg-severity-critical/25 text-severity-critical border border-severity-critical/40',

@@ -1,3 +1,4 @@
+import { useTheme } from './ThemeProvider'
 import type { ReactNode } from 'react'
 import { Skeleton } from './ui/Skeleton.tsx'
 import { chartColors } from '@/lib/colors.ts'
@@ -10,6 +11,7 @@ const tones: Record<Tone, string> = {
   mute: 'text-text-muted',
 }
 function Sparkline({ points }: { points: number[] }) {
+  useTheme()
   if (points.length < 2) return null
   const min = Math.min(...points),
     span = Math.max(...points) - min || 1

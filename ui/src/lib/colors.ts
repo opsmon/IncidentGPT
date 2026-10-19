@@ -47,7 +47,7 @@ export const tooltipStyle = {
   borderRadius: 8,
   fontSize: 12,
   padding: '8px 10px',
-  boxShadow: '0 4px 16px #20283812',
+  boxShadow: 'var(--shadow-chart-tooltip)',
 } as const
 
 export const axisTick = { fill: 'var(--color-text-muted)', fontSize: 11 } as const

@@ -1,3 +1,4 @@
+import { useTheme } from '@/components/ThemeProvider'
 import { useState } from 'react'
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip as ReTooltip,
@@ -79,6 +80,7 @@ function TrendChart({
 }
 
 export function Analytics() {
+  useTheme()
   const [period, setPeriod] = useState('30d')
   const { data: summary, isLoading, isError } = useAnalyticsSummary(period)
   const { data: mttr } = useMTTRTrend(period)
