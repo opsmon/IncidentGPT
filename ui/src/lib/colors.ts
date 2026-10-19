@@ -10,13 +10,13 @@ const fallback: Record<string, string> = {
   '--color-severity-critical': '#FF5F52',
   '--color-severity-warning': '#F5A623',
   '--color-severity-info': '#4C9AFF',
-  '--color-severity-unknown': '#59636F',
-  '--color-accent': '#7C7CFF',
-  '--color-status-resolved': '#3FB950',
-  '--color-border-soft': '#1D2130',
-  '--color-text-muted': '#666C82',
-  '--color-surface-tertiary': '#1B1E2A',
-  '--color-border-default': '#242838',
+  '--color-severity-unknown': '#9AA9BC',
+  '--color-accent': '#5EEAD4',
+  '--color-status-resolved': '#54D99D',
+  '--color-border-soft': '#243348',
+  '--color-text-muted': '#94A6BF',
+  '--color-surface-tertiary': '#1B2A3C',
+  '--color-border-default': '#304157',
 }
 
 function token(name: string): string {
@@ -24,7 +24,7 @@ function token(name: string): string {
     const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
     if (v) return v
   }
-  return fallback[name] ?? '#7C7CFF'
+  return fallback[name] ?? '#5EEAD4'
 }
 
 export const chartColors = {

@@ -36,6 +36,7 @@ function Sparkline({ points }: { points: number[] }) {
 
 interface KPICardProps {
   label: string
+  icon?: ReactNode
   value: ReactNode
   /** Подпись-пилюля под значением: уточнение, порог, что делать. */
   hint?: string
@@ -45,17 +46,17 @@ interface KPICardProps {
   sparkline?: number[]
 }
 
-export function KPICard({ label, value, hint, tone = 'mute', loading = false, sparkline }: KPICardProps) {
+export function KPICard({ label, icon, value, hint, tone = 'mute', loading = false, sparkline }: KPICardProps) {
   return (
-    <div className="rounded-[10px] border border-border-default bg-surface-secondary px-4 py-[15px]">
-      <p className="text-xs text-text-muted">{label}</p>
+    <div className="min-w-0 rounded-[14px] border border-border-default bg-surface-secondary p-5">
+      <div className="flex items-center justify-between gap-3"><p className="text-xs font-medium text-text-secondary">{label}</p><span className="text-text-muted">{icon}</span></div>
       {loading ? (
         <Skeleton className="mt-2 h-[29px] w-20" />
       ) : (
-        <p className="tnum mt-2 text-[29px] font-semibold leading-none tracking-[-0.03em]">{value}</p>
+        <p className="tnum mt-5 text-[32px] font-semibold leading-none tracking-[-0.03em]">{value}</p>
       )}
       {hint && !loading && (
-        <span className={`mt-[9px] inline-flex items-center gap-1 rounded-full px-[7px] py-0.5 text-[11px] font-medium ${toneStyles[tone]}`}>
+        <span className={`mt-[9px] inline-flex items-center gap-1 rounded-md px-[7px] py-0.5 text-[11px] font-medium ${toneStyles[tone]}`}>
           {hint}
         </span>
       )}

@@ -38,10 +38,10 @@ const statusIcons: Record<IncidentStatus, LucideIcon> = {
 }
 
 const statusLabels: Record<IncidentStatus, string> = {
-  active: 'Firing',
-  resolved: 'Resolved',
-  muted: 'Muted',
-  acknowledged: 'Acknowledged',
+  active: 'Активен',
+  resolved: 'Закрыт',
+  muted: 'Заглушён',
+  acknowledged: 'В работе',
 }
 
 export function SeverityBadge({
