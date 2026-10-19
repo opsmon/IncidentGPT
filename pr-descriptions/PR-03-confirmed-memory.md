@@ -1,6 +1,6 @@
 # feat: retrieve confirmed incident resolutions and runbooks
 
-**Status:** Implemented locally; not published.
+**Status:** Draft for upstream review. PRs #16 and #17 are merged; isolated candidate deployment verification remains blocked by the unavailable local Docker daemon.
 
 ## Problem and behavior
 
@@ -10,7 +10,7 @@ Feedback ratings and AI hypotheses do not prove a successful historical fix. Thi
 
 ## Scope and dependencies
 
-Base: `feat/evidence-backed-analysis` at `85309c8`; head: `feat/confirmed-incident-memory`. Implementation commit is in the index. Depends on PR 2 incident-owned evidence and PR 1 reader/sanitizer boundaries. Excludes semantic databases, fine-tuning and runbook execution. Rebase/retarget after predecessor merge; replay/revalidate later branches. Prepared locally; not published.
+Target: `sersert/IncidentGPT:main` at `2983daa48ff85b23a4560c6c5898d3ab8bd863b8`, after squash merges of PRs #16 and #17. Head: `opsmon:feat/confirmed-incident-memory-upstream`. Only the original confirmed-memory change (`ab158bfaba216751c64f896f38c31cb8add62223`) was replayed onto current upstream main, preserving its author. Previously merged changes and later diagnostic/correlation/report features are excluded. Depends on the merged incident-owned evidence and reader/sanitizer boundaries. Excludes semantic databases, fine-tuning and runbook execution. Later stack branches still need replay and validation after this PR merges.
 
 ## API, data and configuration
 
@@ -22,7 +22,7 @@ Current/history resolution keys and cluster/service sorted-set indexes update at
 
 No feedback/AI record is backfilled as confirmed. Existing incidents and feedback stay readable. New knowledge cards use the structured resolution payload; the old mock-only scalar result shape is not claimed as a working backend contract. Current deployment retains shared-admin scope and cluster-aware matching; no per-team tenant isolation is claimed. Clean installs return empty/unknown states rather than examples. Runbook source symlinks must stay inside the configured root, including projected ConfigMap links.
 
-## Validation
+## Historical implementation validation
 
 Passed:
 
@@ -32,6 +32,14 @@ Passed:
 - `helm lint backend/chart`, umbrella dependency build/lint/render and `git diff --check`.
 
 An accidental repository-root go test invocation failed because Go modules are separate; the correct backend/container commands above passed. Not run: production ConfigMap mount, browser interaction tests, live sanitizer policy/LLM/Telegram evaluation or production rollout. Runbooks use deterministic fake sanitizer tests.
+
+## Current candidate verification — 2026-10-19
+
+UI TypeScript checking and production build passed on the replayed candidate. The existing bundle-size warning remains. Backend and umbrella Helm lint passed; default and runbook-enabled umbrella renders passed. The enabled render includes the configured read-only ConfigMap mount and RUNBOOK_DIRECTORY. `git diff --check` passed.
+
+Backend `go vet ./...`, `go build -o /tmp/incidentgpt-memory-backend .` and `go test -race -v ./...` passed using local Go 1.26.3 (`GOTOOLCHAIN=local`), rather than the CI/production Go 1.24 container. Four Redis integration tests were skipped because no dedicated Redis is available, including resolution correction/withdrawal. The initial sandboxed test attempt failed to bind the local httptest port; its authorized rerun outside the sandbox passed. CI must still exercise the intended toolchain and disposable Redis.
+
+The local Docker daemon is unavailable, including outside the sandbox. No candidate production images or image digests, isolated deployment, ingress/health/migration smoke evidence or production verification are available from this run. Historical Docker checks above do not verify this candidate. Keep this PR open and in draft until CI and isolated deployment verification with the intended runtime configuration pass; record candidate commit/image digests and results in the PR before a squash merge. Preserve production data and take backups before any production migration.
 
 ## Rollout and rollback
 
