@@ -1,6 +1,5 @@
 import { NavLink } from 'react-router-dom'
 import {
-  Activity,
   AlertTriangle,
   Bell,
   LayoutDashboard,
@@ -9,7 +8,6 @@ import {
   Plug,
   Settings,
   BookOpen,
-  ArrowUpRight,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -30,16 +28,11 @@ interface SidebarProps {
 export function Sidebar({ activeIncidents, warnings, mobile = false, onNavigate }: SidebarProps) {
   const groups: { title: string; items: Item[] }[] = [
     {
-      title: 'Рабочее пространство',
+      title: 'Мониторинг',
       items: [
         { to: '/', label: 'Обзор', icon: LayoutDashboard, end: true },
         { to: '/incidents', label: 'Инциденты', icon: AlertTriangle, count: activeIncidents },
-        { to: '/alerts', label: 'Поток алертов', icon: Bell },
-      ],
-    },
-    {
-      title: 'Наблюдение',
-      items: [
+        { to: '/alerts', label: 'Алерты', icon: Bell },
         { to: '/analytics', label: 'Аналитика', icon: BarChart3 },
         { to: '/predictions', label: 'Прогнозы', icon: TrendingUp, count: warnings },
       ],
@@ -48,34 +41,33 @@ export function Sidebar({ activeIncidents, warnings, mobile = false, onNavigate 
       title: 'Настройки',
       items: [
         { to: '/settings/integrations', label: 'Интеграции', icon: Plug },
-        { to: '/settings/llm', label: 'Модель AI', icon: Settings },
+        { to: '/settings/llm', label: 'Модель', icon: Settings },
       ],
     },
   ]
-
   return (
     <aside
       className={
         mobile
           ? 'flex min-h-full flex-col bg-surface-secondary p-5'
-          : 'sticky top-0 hidden h-dvh w-[244px] shrink-0 flex-col border-r border-border-soft bg-surface-secondary p-5 lg:flex'
+          : 'sticky top-0 hidden h-dvh w-[220px] shrink-0 flex-col border-r border-border-default bg-surface-secondary px-4 py-5 lg:flex'
       }
     >
-      <NavLink to="/" onClick={onNavigate} className="mb-8 flex items-center gap-3 rounded-lg">
-        <span className="grid size-10 place-items-center rounded-xl border border-accent/25 bg-accent/10 text-accent">
-          <Activity size={23} strokeWidth={1.8} />
-        </span>
-        <span>
-          <span className="block text-[17px] font-semibold tracking-tight">IncidentGPT</span>
-          <span className="text-[11px] text-text-muted">Контекст. Решение. Опыт.</span>
-        </span>
+      <NavLink
+        to="/"
+        onClick={onNavigate}
+        className="mb-10 flex items-center gap-2.5 px-2 text-[19px] font-semibold tracking-[-.04em]"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 4h12v16H6z" stroke="currentColor" strokeWidth="1.6" />
+          <path d="M10 8h4m-4 4h4m-4 4h4" stroke="currentColor" strokeWidth="1.6" />
+        </svg>
+        IncidentGPT
       </NavLink>
-      <nav aria-label="Основная навигация" className="min-h-0 space-y-7 overflow-y-auto">
+      <nav aria-label="Основная навигация" className="min-h-0 space-y-8 overflow-y-auto">
         {groups.map((group) => (
           <div key={group.title}>
-            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[.12em] text-text-muted">
-              {group.title}
-            </p>
+            <p className="mb-2 px-3 text-[11px] font-medium text-text-muted">{group.title}</p>
             <div className="space-y-1">
               {group.items.map((item) => (
                 <NavLink
@@ -84,15 +76,13 @@ export function Sidebar({ activeIncidents, warnings, mobile = false, onNavigate 
                   end={item.end}
                   onClick={onNavigate}
                   className={({ isActive }) =>
-                    `flex min-h-11 items-center gap-3 rounded-lg px-3 text-[13px] font-medium transition-colors ${isActive ? 'bg-accent/10 text-accent ring-1 ring-inset ring-accent/15' : 'text-text-secondary hover:bg-surface-tertiary hover:text-text-primary'}`
+                    `flex min-h-10 items-center gap-3 rounded-md px-3 text-[13px] transition-colors ${isActive ? 'bg-surface-tertiary font-semibold text-text-primary' : 'text-text-secondary hover:bg-surface-primary hover:text-text-primary'}`
                   }
                 >
-                  <item.icon size={17} strokeWidth={1.7} aria-hidden="true" />
+                  <item.icon size={16} strokeWidth={1.6} aria-hidden="true" />
                   {item.label}
                   {item.count != null && item.count > 0 && (
-                    <span className="tnum ml-auto rounded-md bg-surface-primary/60 px-2 py-0.5 text-[11px]">
-                      {item.count}
-                    </span>
+                    <span className="tnum ml-auto text-[11px] font-medium text-text-muted">{item.count}</span>
                   )}
                 </NavLink>
               ))}
@@ -104,17 +94,11 @@ export function Sidebar({ activeIncidents, warnings, mobile = false, onNavigate 
         to="/help"
         onClick={onNavigate}
         className={({ isActive }) =>
-          `mt-auto rounded-xl border p-4 text-sm transition-colors ${isActive ? 'border-accent/40 bg-accent/10' : 'border-border-default bg-surface-primary/40 hover:border-accent/40'}`
+          `mt-auto flex min-h-11 items-center gap-3 rounded-md px-3 text-[13px] ${isActive ? 'bg-surface-tertiary font-medium text-text-primary' : 'text-text-secondary hover:bg-surface-primary'}`
         }
       >
-        <span className="mb-3 flex items-center justify-between text-accent">
-          <BookOpen size={18} />
-          <ArrowUpRight size={14} />
-        </span>
-        <span className="block font-medium">Руководство дежурного</span>
-        <span className="mt-1 block text-xs leading-relaxed text-text-muted">
-          От первого алерта до передачи смены.
-        </span>
+        <BookOpen size={16} strokeWidth={1.6} />
+        Руководство
       </NavLink>
     </aside>
   )

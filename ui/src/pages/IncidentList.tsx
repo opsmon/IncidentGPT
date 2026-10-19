@@ -1,18 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import {
-  Search,
-  X,
-  AlertCircle,
-  Layers,
-  ArrowUpRight,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-  SlidersHorizontal,
-} from 'lucide-react'
+import { Search, X, AlertCircle, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Incident } from '@/api/types.ts'
-import { SeverityBadge, SeverityDot, StatusBadge } from '@/components/ui/Badge.tsx'
+import { SeverityBadge, StatusBadge } from '@/components/ui/Badge.tsx'
 import { EmptyState } from '@/components/ui/EmptyState.tsx'
 import { Skeleton } from '@/components/ui/Skeleton.tsx'
 import { Button } from '@/components/ui/Button.tsx'
@@ -47,44 +37,38 @@ function IncidentRow({ incident, query }: { incident: Incident; query: string })
   return (
     <Link
       to={`/incidents/${encodeURIComponent(incident.id)}`}
-      className="group grid min-w-0 grid-cols-[auto_1fr] gap-4 rounded-xl border border-border-default bg-surface-secondary p-4 transition-colors hover:border-accent/45 hover:bg-surface-tertiary/60 sm:p-5"
+      className="group flex min-w-0 flex-col gap-3 border-b border-border-soft px-5 py-4 transition-colors last:border-0 hover:bg-surface-primary md:grid md:grid-cols-[minmax(0,1fr)_110px_90px_100px] md:items-center md:gap-5"
     >
-      <SeverityDot severity={incident.severity} halo={incident.status === 'active'} className="mt-2" />
       <div className="min-w-0">
-        <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px]">
-          <span className="font-mono text-text-muted">{incident.id}</span>
-          <StatusBadge status={incident.status} />
-          <time
-            dateTime={incident.created_at}
-            title={formatDate(incident.created_at)}
-            className="tnum ml-auto text-text-muted"
-          >
-            {timeAgo(incident.created_at)}
-          </time>
-        </div>
-        <div className="flex items-start gap-3">
-          <h2 className="min-w-0 break-words text-[15px] font-semibold tracking-tight group-hover:text-accent">
-            <Highlight text={incident.title} query={query} />
-          </h2>
-          <ArrowUpRight size={16} className="ml-auto shrink-0 text-text-muted group-hover:text-accent" />
-        </div>
-        <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed text-text-secondary">
-          {incident.analysis_summary ? (
-            <Highlight text={incident.analysis_summary} query={query} />
-          ) : (
-            'Краткого анализа пока нет. Откройте инцидент, чтобы проверить состояние обработки.'
-          )}
-        </p>
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-text-muted">
-          <SeverityBadge severity={incident.severity} />
-          <span className="inline-flex items-center gap-1.5">
-            <Layers size={13} />
-            {countOf(incident.alert_count, words.alert)}
-          </span>
+        <div className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-text-muted">
+          <span className="font-mono">{incident.id}</span>
           <span className="break-all">{incident.namespace || 'namespace неизвестен'}</span>
-          {incident.source && <span className="break-all">{incident.source}</span>}
-          {incident.has_postmortem && <span className="text-accent">Есть постмортем</span>}
+          <span>{countOf(incident.alert_count, words.alert)}</span>
+          {incident.has_postmortem && <span>Постмортем</span>}
         </div>
+        <h2 className="break-words text-[14px] font-medium tracking-[-.01em] group-hover:text-accent">
+          <Highlight text={incident.title} query={query} />
+        </h2>
+        {incident.analysis_summary && (
+          <p className="mt-1 line-clamp-1 text-xs leading-relaxed text-text-muted">
+            <Highlight text={incident.analysis_summary} query={query} />
+          </p>
+        )}
+      </div>
+      <div className="flex flex-wrap items-center gap-3 md:contents">
+        <span>
+          <StatusBadge status={incident.status} />
+        </span>
+        <span>
+          <SeverityBadge severity={incident.severity} />
+        </span>
+        <time
+          dateTime={incident.created_at}
+          title={formatDate(incident.created_at)}
+          className="tnum ml-auto text-[11px] text-text-muted md:ml-0"
+        >
+          {timeAgo(incident.created_at)}
+        </time>
       </div>
     </Link>
   )
@@ -167,20 +151,17 @@ export function IncidentList() {
     <div>
       <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="page-eyebrow">Рабочая очередь</p>
           <h1 className="page-title">Инциденты</h1>
-          <p className="page-description">
-            Найдите нужный инцидент, оцените контекст и примите его в работу.
-          </p>
+          <p className="page-description hidden sm:block">Текущая работа и история разборов.</p>
         </div>
         <Button variant="secondary" onClick={() => refetch()} disabled={isFetching}>
           <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
           Обновить
         </Button>
       </div>
-      <div className="mb-5 rounded-xl border border-border-default bg-surface-secondary p-4">
+      <div className="mb-5 border-b border-border-default pb-0">
         <div className="flex flex-wrap gap-3">
-          <div className="relative min-w-0 flex-1 basis-60">
+          <div className="relative min-w-0 flex-1 basis-60 md:max-w-md">
             <Search size={17} className="pointer-events-none absolute top-3 left-3 text-text-muted" />
             <input
               id="incident-search"
@@ -192,7 +173,7 @@ export function IncidentList() {
               }}
               placeholder="Название или текст анализа…"
               aria-label="Поиск по инцидентам"
-              className="h-11 w-full rounded-lg border border-border-default bg-surface-primary pr-10 pl-10 text-sm placeholder:text-text-muted focus:border-accent"
+              className="h-11 w-full rounded-md border border-border-default bg-surface-secondary pr-10 pl-10 text-sm placeholder:text-text-muted focus:border-accent"
             />
             {search && (
               <button
@@ -205,13 +186,12 @@ export function IncidentList() {
             )}
           </div>
           <label className="flex items-center gap-2 text-xs text-text-muted">
-            <SlidersHorizontal size={15} aria-hidden="true" />
             <span className="sr-only">Критичность</span>
             <select
               aria-label="Критичность"
               value={severity}
               onChange={(event) => change('severity', event.target.value)}
-              className="h-11 rounded-lg border border-border-default bg-surface-primary px-3 text-xs text-text-secondary"
+              className="h-11 rounded-md border border-border-default bg-surface-secondary px-3 text-xs text-text-secondary"
             >
               <option value="">Любая критичность</option>
               <option value="critical">critical</option>
@@ -221,13 +201,17 @@ export function IncidentList() {
             </select>
           </label>
         </div>
-        <div className="mt-4 flex flex-wrap items-center gap-2" role="group" aria-label="Статус инцидента">
+        <div
+          className="mt-4 flex items-center gap-3 overflow-x-auto"
+          role="group"
+          aria-label="Статус инцидента"
+        >
           {statuses.map((item) => (
             <button
               key={item.label}
               onClick={() => change('status', item.value)}
               aria-pressed={status === item.value}
-              className={`min-h-9 rounded-lg px-3 text-xs font-medium ${status === item.value ? 'bg-accent/12 text-accent' : 'text-text-secondary hover:bg-surface-tertiary'}`}
+              className={`min-h-11 shrink-0 whitespace-nowrap border-b-2 px-2 text-xs font-medium ${status === item.value ? 'border-text-primary text-text-primary' : 'border-transparent text-text-muted hover:text-text-primary'}`}
             >
               {item.label}
             </button>
@@ -288,7 +272,13 @@ export function IncidentList() {
           )}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="overflow-hidden rounded-lg border border-border-default bg-surface-secondary">
+          <div className="hidden grid-cols-[minmax(0,1fr)_110px_90px_100px] gap-5 border-b border-border-soft px-5 py-3 text-[11px] text-text-muted md:grid">
+            <span>Инцидент</span>
+            <span>Статус</span>
+            <span>Критичность</span>
+            <span>Поступил</span>
+          </div>
           {incidents.map((incident) => (
             <IncidentRow key={incident.id} incident={incident} query={query} />
           ))}

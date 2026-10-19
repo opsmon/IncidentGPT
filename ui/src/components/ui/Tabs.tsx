@@ -29,7 +29,7 @@ export function Tabs({ tabs, active, onChange, className = '', label, idPrefix, 
       ref={list}
       role="tablist"
       aria-label={label}
-      className={`flex max-w-full gap-1 overflow-x-auto rounded-xl bg-surface-primary/50 p-1 ${className}`}
+      className={`flex max-w-full gap-5 overflow-x-auto border-b border-border-soft ${className}`}
     >
       {tabs.map((tab, index) => (
         <button
@@ -57,7 +57,7 @@ export function Tabs({ tabs, active, onChange, className = '', label, idPrefix, 
               activate(destination)
             }
           }}
-          className={`min-h-10 shrink-0 rounded-lg px-3 text-xs font-medium transition-colors ${active === tab.id ? 'bg-surface-tertiary text-accent shadow-sm' : 'text-text-muted hover:bg-surface-tertiary/50 hover:text-text-primary'}`}
+          className={`min-h-11 shrink-0 border-b-2 px-1 text-[13px] font-medium transition-colors ${active === tab.id ? 'border-text-primary text-text-primary' : 'border-transparent text-text-muted hover:text-text-primary'}`}
         >
           {tab.label}
           {tab.count !== undefined && <span className="tnum ml-2 opacity-70">{tab.count}</span>}

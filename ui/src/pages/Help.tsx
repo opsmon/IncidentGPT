@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, BookOpen, CheckCircle2, Search, ShieldCheck } from 'lucide-react'
+import { ArrowRight, BookOpen, Search } from 'lucide-react'
 import { Card } from '@/components/ui/Card.tsx'
 
 const chapters = [
@@ -13,23 +13,22 @@ export function Help() {
   return (
     <div>
       <div className="mb-8 max-w-3xl">
-        <p className="page-eyebrow">Руководство дежурного</p>
-        <h1 className="page-title">От алерта к понятному решению</h1>
+        <h1 className="page-title">Руководство дежурного</h1>
         <p className="page-description">
-          Четыре шага для работы с инцидентом. Начните с очереди и возвращайтесь к инструкции в нужный момент.
+          Как принять инцидент, проверить данные и передать результат следующей смене.
         </p>
         <Link
           to="/incidents?status=active"
-          className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-surface-primary hover:bg-accent-hover"
+          className="mt-4 inline-flex min-h-10 items-center gap-2 text-[13px] text-accent hover:underline"
         >
           Открыть активные инциденты
           <ArrowRight size={15} />
         </Link>
       </div>
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_270px]">
-        <div className="guide-prose min-w-0 space-y-5 text-[13px] leading-relaxed text-text-secondary">
+      <div className="grid items-start gap-10 xl:grid-cols-[minmax(0,1fr)_220px]">
+        <div className="guide-prose min-w-0 space-y-8 text-[14px] leading-[1.8] text-text-secondary">
           <section id="triage">
-            <Card title="01 · Найдите и примите инцидент">
+            <Card plain title="Найдите и примите инцидент">
               <p>
                 На экране «Обзор» видны текущие инциденты и доступные измерения. Для полного списка перейдите
                 в «Инциденты»: выберите статус и критичность, найдите название или текст анализа. Фильтры
@@ -52,7 +51,7 @@ export function Help() {
             </Card>
           </section>
           <section id="investigate">
-            <Card title="02 · Сверьте факты и гипотезы">
+            <Card plain title="Сверьте факты и гипотезы">
               <p>
                 Сначала прочитайте анализ и откройте его доказательства: источник, время наблюдения и
                 доступность. Гипотеза модели может быть ошибочной или относиться к предыдущему составу группы.
@@ -80,7 +79,7 @@ export function Help() {
             </Card>
           </section>
           <section id="resolve">
-            <Card title="03 · Подтвердите результат">
+            <Card plain title="Подтвердите результат">
               <p>
                 После проверки восстановления запишите известное время и доказательства в блоке жизненного
                 цикла на вкладке «Обзор и анализ». Сигнал resolved от Alertmanager сам по себе не подтверждает
@@ -98,7 +97,7 @@ export function Help() {
             </Card>
           </section>
           <section id="handoff">
-            <Card title="04 · Передайте контекст">
+            <Card plain title="Передайте контекст">
               <p>
                 Откройте «Отчёты и передача». Сгенерируйте черновик постмортема или передачи смены, проверьте
                 ссылки на источники, дополните выводы и назначьте владельцев последующих действий.
@@ -115,7 +114,7 @@ export function Help() {
             </Card>
           </section>
           <section id="statuses">
-            <Card title="Что означают статусы">
+            <Card plain title="Что означают статусы">
               <dl className="grid gap-4 sm:grid-cols-2">
                 {[
                   ['Активен', 'Новый или возвращённый в очередь инцидент.'],
@@ -123,7 +122,7 @@ export function Help() {
                   ['Закрыт', 'Работа административно завершена.'],
                   ['Заглушён', 'Инцидент выведен из активной очереди; это не восстановление.'],
                 ].map(([term, description]) => (
-                  <div key={term} className="rounded-lg bg-surface-tertiary/50 p-4">
+                  <div key={term} className="border-b border-border-soft pb-4">
                     <dt className="mb-1 font-medium text-text-primary">{term}</dt>
                     <dd>{description}</dd>
                   </div>
@@ -132,7 +131,7 @@ export function Help() {
             </Card>
           </section>
           <section id="questions">
-            <Card title="Если что-то не получается">
+            <Card plain title="Если что-то не получается">
               <div className="divide-y divide-border-soft">
                 {[
                   [
@@ -162,7 +161,7 @@ export function Help() {
           </section>
         </div>
         <aside aria-label="В этой инструкции" className="space-y-5 xl:sticky xl:top-24">
-          <Card title="В этой инструкции">
+          <Card plain title="В этой инструкции">
             <nav className="space-y-1">
               {chapters.map((chapter) => (
                 <a
@@ -170,7 +169,7 @@ export function Help() {
                   href={`#${chapter.id}`}
                   className="flex items-start gap-3 rounded-lg py-3 text-xs text-text-secondary hover:text-accent"
                 >
-                  <span className="font-mono text-accent">{chapter.number}</span>
+                  <span className="font-mono text-text-muted">{chapter.number}</span>
                   {chapter.title}
                 </a>
               ))}
@@ -182,14 +181,6 @@ export function Help() {
               </a>
             </nav>
           </Card>
-          <div className="rounded-xl border border-accent/20 bg-accent/5 p-5">
-            <ShieldCheck size={21} className="mb-3 text-accent" />
-            <p className="text-sm font-medium">Решение остаётся за инженером</p>
-            <p className="mt-2 text-xs leading-relaxed text-text-secondary">
-              AI помогает собрать контекст. Подтверждение причины, восстановление и публикация отчёта требуют
-              проверки человеком.
-            </p>
-          </div>
           <div className="space-y-3 px-1">
             <Link
               to="/incidents"
@@ -202,7 +193,6 @@ export function Help() {
               to="/settings/integrations"
               className="flex items-center gap-2 text-xs text-text-secondary hover:text-accent"
             >
-              <CheckCircle2 size={14} />
               Посмотреть интеграции
             </Link>
             <a

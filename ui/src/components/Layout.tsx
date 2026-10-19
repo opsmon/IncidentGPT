@@ -81,7 +81,7 @@ export function Layout() {
         </div>
       </dialog>
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-20 flex min-h-16 items-center gap-3 border-b border-border-soft bg-surface-primary/95 px-4 backdrop-blur-sm sm:px-7 lg:px-9">
+        <header className="sticky top-0 z-20 flex min-h-14 items-center gap-3 border-b border-border-soft bg-surface-secondary px-4 sm:px-7 lg:px-9">
           <button
             aria-label="Открыть меню"
             aria-controls="mobile-navigation"
@@ -96,18 +96,12 @@ export function Layout() {
             className="flex min-w-0 items-center gap-2 text-xs text-text-muted"
           >
             <Link to="/" className="hidden hover:text-text-primary sm:block">
-              Рабочее пространство
+              IncidentGPT
             </Link>
             <ChevronRight size={12} className="hidden sm:block" />
             <span className="truncate text-text-primary">{section}</span>
           </nav>
           <div className="ml-auto flex items-center gap-4">
-            <span className="hidden items-center gap-2 text-xs text-text-secondary sm:inline-flex">
-              <span
-                className={`size-1.5 rounded-full ${isError || !stats ? 'bg-text-muted' : stats.active_incidents > 0 ? 'bg-severity-warning' : 'bg-status-resolved'}`}
-              />
-              {isError ? 'Данные недоступны' : stats ? `${stats.active_incidents} активных` : 'Загрузка…'}
-            </span>
             <Link
               to="/help"
               className="flex min-h-10 items-center gap-2 rounded-lg px-2 text-xs text-text-secondary hover:bg-surface-tertiary hover:text-accent"
@@ -126,9 +120,9 @@ export function Layout() {
         <main
           id="main-content"
           tabIndex={-1}
-          className="min-w-0 px-4 pt-7 pb-16 outline-none sm:px-7 lg:px-9 lg:pt-9"
+          className="min-w-0 px-4 pt-8 pb-16 outline-none sm:px-8 lg:px-10 lg:pt-10"
         >
-          <div className="mx-auto max-w-[1440px]">
+          <div className="mx-auto max-w-[1280px]">
             <Outlet />
           </div>
         </main>

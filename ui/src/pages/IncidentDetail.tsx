@@ -496,11 +496,11 @@ export function IncidentDetail() {
             </Button>
           )}
         </div>
-        <h1 className="basis-full break-words text-[25px] leading-snug font-semibold tracking-[-0.025em] sm:text-[30px]">{incident.title}</h1>
+        <h1 className="basis-full break-words text-[23px] leading-snug font-semibold tracking-[-0.025em] sm:text-[27px]">{incident.title}</h1>
       </div>
 
       {update.isError && <p role="alert" className="mb-4 rounded-lg border border-severity-critical/30 bg-severity-critical/5 p-4 text-sm">Изменения не сохранены. {update.error.message}</p>}
-      <div className="mb-6 rounded-xl border border-border-default bg-surface-secondary p-2">
+      <div className="mb-6">
         <Tabs idPrefix="incident-workspace" panelIdPrefix="incident-panel" label="Рабочие разделы инцидента" tabs={views} active={view} onChange={changeView} />
       </div>
       <section id="incident-panel-overview" role="tabpanel" aria-labelledby="incident-workspace-overview" hidden={view !== 'overview'} tabIndex={0}>
@@ -623,7 +623,7 @@ export function IncidentDetail() {
                     <Link
                       key={sim.id}
                       to={`/incidents/${sim.id}`}
-                      className="mb-2 block rounded-[9px] bg-surface-tertiary p-3 transition-colors hover:bg-[#222634]"
+                      className="mb-2 block rounded-[9px] bg-surface-tertiary p-3 transition-colors hover:bg-border-soft"
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-[12.5px] font-semibold">{sim.id}</span>

@@ -1,7 +1,9 @@
 # Operator interface and guide review
 
-The interface uses a navy workspace, readable text tokens, teal interactive accents
-and separate severity colors. The main changes are the responsive navigation,
+The interface uses neutral light surfaces, ink typography, restrained blue links
+and separate severity colors. Navigation is compact; metrics share one strip,
+and incident queues use aligned rows rather than repeated floating cards.
+The overview focuses on data; instructional content lives in the guide. The main changes are the responsive navigation,
 shift overview, paginated/filterable incident queue, incident workspace tabs and an
 in-app on-call guide. Shared buttons/cards/inputs retain existing APIs and routes.
 
@@ -43,7 +45,9 @@ fixtures passed 15 checks on 2026-10-19:
 - Additional incident/list/guide overflow checks at 320px and 768px.
 - No uncaught browser exceptions across the scenario.
 
-Main screenshots were reviewed at 1440px and 390px. Fixtures exercise UI behavior
+Main screenshots were reviewed at 1440px and 390px. The main text, link and
+semantic text colors were checked against white: minimum contrast 4.8:1.
+The light palette also updates chart tooltips, raw-data views, filters and settings. Fixtures exercise UI behavior
 without making real mutations or provider calls. They do not verify backend
 credentials, Redis persistence, live integrations, a browser/platform matrix or
 production ingress/TLS. Existing backend APIs and storage are unchanged.

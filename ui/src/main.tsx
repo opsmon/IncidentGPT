@@ -12,7 +12,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
   render() {
     if (this.state.error) {
       return (
-        <div style={{ padding: 40, color: '#FF5F52', fontFamily: 'monospace' }}>
+        <div style={{ padding: 40, color: 'var(--color-severity-critical)', fontFamily: 'monospace' }}>
           <h1>UI Error</h1>
           <pre>{this.state.error.message}</pre>
           <pre>{this.state.error.stack}</pre>
