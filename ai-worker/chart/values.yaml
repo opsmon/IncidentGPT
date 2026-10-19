@@ -39,10 +39,12 @@ secrets:
   existingSecret: ""
   openRouterApiKeyKey: OPENROUTER_API_KEY
   telegramBotTokenKey: TELEGRAM_BOT_TOKEN
+  analysisServiceTokenKey: analysis-service-token
   sanitizerAuthSharedSecretKey: auth-shared-secret
 
 env:
   LISTEN_ADDR: ":8080"
+  STRUCTURED_OUTPUT_MODE: "compatibility"
   LOG_LEVEL: "info"
 
   OPENROUTER_BASE_URL: "https://openrouter.ai/api/v1/chat/completions"

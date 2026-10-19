@@ -103,6 +103,8 @@ export interface StatusChange {
 }
 
 export interface IncidentDetail extends Incident {
+  analysis_mode?: string
+
   /** Кто взял инцидент. */
   assignee: string | null
   /** Журнал действий: кто что сделал и когда. */

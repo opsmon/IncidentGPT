@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -75,6 +76,9 @@ func bufferAlert(e EnrichedAlert) error {
 		return fmt.Errorf("redis not configured")
 	}
 
+	if durableCorrelation() {
+		return bufferDurable(e)
+	}
 	gk := groupKeyFor(e)
 	key := "grp:" + gk
 
@@ -178,7 +182,7 @@ func flushGroup(key, groupKey string) {
 
 	// Отправляем пакет ДО удаления ключа из Redis.
 	// Если отправка упадёт — группа останется в Redis и будет доставлена
-	// при следующем вызове flushGroup или по истечении TTL.
+	// only if another alert causes a flush. TTL discards data; it does not retry.
 	if err := sendGroupToBackend(ctx, groupKey, alerts); err != nil {
 		log.Printf("ERROR: failed to send incident group to backend: %v", err)
 		return
@@ -231,7 +235,13 @@ func sendRawToBackend(e EnrichedAlert) {
 
 // sendGroupToBackend отправляет пачку алертов на GROUP_BACKEND_URL.
 func sendGroupToBackend(ctx context.Context, groupKey string, alerts []json.RawMessage) error {
+	return sendDurableGroup(ctx, groupKey, "", alerts)
+}
+func sendDurableGroup(ctx context.Context, groupKey, batchID string, alerts []json.RawMessage) error {
 	if appCfg.GroupBackendURL == "" {
+		if batchID != "" {
+			return fmt.Errorf("durable group destination not configured")
+		}
 		log.Printf("INFO: GROUP_BACKEND_URL is empty, skip sending incident group")
 		return nil
 	}
@@ -257,6 +267,10 @@ func sendGroupToBackend(ctx context.Context, groupKey string, alerts []json.RawM
 		return fmt.Errorf("create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	if batchID != "" {
+		req.Header.Set("X-IncidentGPT-Batch-ID", batchID)
+		req.Header.Set("Authorization", "Bearer "+os.Getenv("ANALYSIS_SERVICE_TOKEN"))
+	}
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
@@ -265,8 +279,7 @@ func sendGroupToBackend(ctx context.Context, groupKey string, alerts []json.RawM
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 {
-		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<10))
-		return fmt.Errorf("group backend HTTP %d: %s", resp.StatusCode, string(body))
+		return fmt.Errorf("group backend HTTP %d", resp.StatusCode)
 	}
 
 	log.Printf(

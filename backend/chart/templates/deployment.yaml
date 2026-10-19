@@ -42,6 +42,12 @@ spec:
                   key: {{ .Values.logsStore.passwordKey }}
             {{- end }}
             {{- if .Values.changes.existingSecret }}
+            - name: ANALYSIS_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.changes.existingSecret }}
+                  key: {{ .Values.changes.analysisServiceTokenKey }}
+                  optional: true
             - name: CHANGE_INGEST_TOKEN
               valueFrom:
                 secretKeyRef:

@@ -30,6 +30,16 @@ spec:
             - containerPort: 9099
               name: http
           env:
+            - name: DURABLE_CORRELATION_ENABLED
+              value: {{ .Values.changes.durableCorrelation | quote }}
+            {{- if .Values.changes.existingSecret }}
+            - name: ANALYSIS_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.changes.existingSecret }}
+                  key: {{ .Values.changes.analysisServiceTokenKey }}
+                  optional: true
+            {{- end }}
             - name: CHANGE_COLLECTOR_ENABLED
               value: {{ .Values.changes.enabled | quote }}
             - name: CLUSTER_ID

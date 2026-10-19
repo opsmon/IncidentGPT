@@ -467,6 +467,7 @@ func main() {
 	}
 
 	startChangeCollector()
+	startDurableCorrelation()
 	log.Printf("Starting Data Enricher on %s", appCfg.ListenAddr)
 	log.Printf("Prometheus: %s", appCfg.PromURL)
 	log.Printf("Backend: %s", appCfg.BackendURL)
@@ -558,6 +559,11 @@ func alertHandler(w http.ResponseWriter, r *http.Request) {
 		if err := bufferAlert(e); err != nil {
 			// errSkipResolved — не ошибка: resolved-алерты не корреллируем,
 			// шлём поштучно, чтобы в канал ушло [RESOLVED]-уведомление.
+			if durableCorrelation() && !errors.Is(err, errSkipResolved) {
+				go sendRawToBackend(e)
+				http.Error(w, "durable correlation unavailable; retry alert delivery", 503)
+				return
+			}
 			if !errors.Is(err, errSkipResolved) {
 				appMetrics.inc("incidentgpt_redis_fallback_total")
 				log.Printf("WARN: redis buffering failed, falling back to direct send: %v", err)

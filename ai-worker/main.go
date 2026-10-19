@@ -181,6 +181,7 @@ func main() {
 	mux.HandleFunc("/incident", incidentHandler)
 	mux.HandleFunc("/incident-raw", incidentRawHandler)
 	mux.HandleFunc("/incident-group", incidentGroupHandler)
+	mux.HandleFunc("POST /v1/analyze", structuredAnalysisHandler)
 
 	srv := &http.Server{
 		Addr:              appCfg.ListenAddr,
@@ -771,9 +772,8 @@ func callOpenRouterWithSystem(ctx context.Context, sysPrompt, prompt string) (st
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 {
-		b, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<10))
 		appMetrics.inc("incidentgpt_openrouter_errors_total")
-		return "", fmt.Errorf("openrouter HTTP %d: %s", resp.StatusCode, string(b))
+		return "", fmt.Errorf("openrouter HTTP %d", resp.StatusCode)
 	}
 
 	var orResp struct {
